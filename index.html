@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QRIFY — Générateur QR Code & Code-Barre</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4163013785348527" crossorigin="anonymous"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<style>
+:root {
+  --bg: #F7F5F0;
+  --surface: #FFFFFF;
+  --surface2: #F0EDE6;
+  --black: #0F0F0F;
+  --accent: #FF4D00;
+  --accent2: #FFB800;
+  --muted: #888;
+  --border: #E5E0D8;
+  --text: #1A1A1A;
+  --radius: 16px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+  --shadow-lg: 0 16px 60px rgba(0,0,0,0.12);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { font-family: 'Instrument Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+/* ── HEADER ── */
+header { padding: 20px 40px; display: flex; align-items: center; justify-content: space-between; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+.logo { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 1.4rem; color: var(--black); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+.logo-dot { color: var(--accent); }
+.header-tag { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); background: var(--surface2); padding: 6px 14px; border-radius: 50px; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.btn-login { padding: 9px 18px; border: 1.5px solid var(--border); background: none; border-radius: 10px; font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; color: var(--text); }
+.btn-login:hover { border-color: var(--black); }
+.btn-signup-hdr { padding: 9px 18px; background: var(--black); color: white; border: none; border-radius: 10px; font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; }
+.btn-signup-hdr:hover { background: #333; }
+.user-badge { display: flex; align-items: center; gap: 10px; }
+.user-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: white; font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 0.82rem; display: flex; align-items: center; justify-content: center; }
+.user-plan-badge { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; border-radius: 50px; }
+.plan-free { background: #F0EDE6; color: #888; }
+.plan-starter { background: #FFF3E0; color: #E65100; }
+.plan-pro { background: #E8F5E9; color: #1B5E20; }
+.btn-logout { background: none; border: none; font-size: 0.8rem; color: var(--muted); cursor: pointer; padding: 4px 8px; border-radius: 8px; }
+.btn-logout:hover { color: var(--text); background: var(--surface2); }
+
+/* ── HERO ── */
+.hero { text-align: center; padding: 60px 40px 40px; }
+.hero-title { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: clamp(2.2rem, 5vw, 4rem); line-height: 1.05; letter-spacing: -0.03em; color: var(--black); margin-bottom: 14px; }
+.hero-title span { color: var(--accent); }
+.hero-sub { font-size: 1rem; color: var(--muted); max-width: 480px; margin: 0 auto; line-height: 1.6; }
+
+/* ── USAGE BAR ── */
+.usage-bar-wrap { max-width: 480px; margin: 20px auto 0; background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px; padding: 14px 20px; }
+.usage-bar-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.usage-label { font-size: 0.78rem; font-weight: 500; color: var(--text); }
+.usage-count { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 0.85rem; }
+.usage-track { height: 6px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+.usage-fill { height: 100%; border-radius: 99px; background: var(--accent); transition: width 0.5s; }
+.usage-fill.ok { background: #22C55E; }
+.usage-fill.warn { background: var(--accent2); }
+.usage-fill.danger { background: var(--accent); }
+.usage-upgrade-hint { font-size: 0.72rem; color: var(--muted); margin-top: 6px; }
+.usage-upgrade-hint a { color: var(--accent); text-decoration: none; cursor: pointer; }
+.usage-upgrade-hint a:hover { text-decoration: underline; }
+
+/* ── MAIN ── */
+.app-container { max-width: 1100px; margin: 40px auto; padding: 0 24px; display: grid; grid-template-columns: 1fr 400px; gap: 24px; align-items: start; }
+
+/* ── CARD ── */
+.card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
+.card-header { padding: 24px 28px 0; display: flex; align-items: center; justify-content: space-between; }
+.card-title { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 1.05rem; color: var(--black); }
+.card-body { padding: 24px 28px 28px; }
+
+/* ── TYPE SELECTOR ── */
+.type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 24px; }
+.type-btn { padding: 12px 8px; border: 1.5px solid var(--border); background: var(--surface); border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.type-btn:hover { border-color: var(--accent); background: #FFF5F2; }
+.type-btn.active { border-color: var(--accent); background: #FFF5F2; }
+.type-icon { font-size: 1.4rem; }
+.type-label { font-size: 0.65rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.type-btn.active .type-label { color: var(--accent); }
+
+/* ── TABS ── */
+.output-tabs { display: flex; gap: 6px; margin-bottom: 20px; }
+.otab { flex: 1; padding: 10px; border: 1.5px solid var(--border); background: none; border-radius: 10px; font-family: 'Cabinet Grotesk', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+.otab.active { border-color: var(--black); background: var(--black); color: white; }
+
+/* ── FORMS ── */
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+.form-input, .form-select, .form-textarea { width: 100%; padding: 12px 16px; background: var(--surface2); border: 1.5px solid var(--border); border-radius: 10px; font-family: 'Instrument Sans', sans-serif; font-size: 0.92rem; color: var(--text); outline: none; transition: border-color 0.2s; }
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); background: white; }
+.form-textarea { resize: vertical; min-height: 90px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-hint { font-size: 0.72rem; color: var(--muted); margin-top: 5px; }
+
+/* ── COLOR ── */
+.color-picker-wrap { display: flex; align-items: center; gap: 10px; }
+.color-preview { width: 36px; height: 36px; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; transition: transform 0.2s; flex-shrink: 0; }
+.color-preview:hover { transform: scale(1.1); }
+input[type="color"] { opacity: 0; width: 0; height: 0; position: absolute; }
+.color-presets { display: flex; gap: 6px; flex-wrap: wrap; }
+.color-preset { width: 24px; height: 24px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: transform 0.15s, border-color 0.15s; }
+.color-preset:hover { transform: scale(1.15); }
+.color-preset.selected { border-color: var(--black); }
+
+/* ── UPLOAD ── */
+.upload-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+.upload-zone:hover { border-color: var(--accent); background: #FFF5F2; }
+.upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.upload-icon { font-size: 1.8rem; margin-bottom: 6px; }
+.upload-text { font-size: 0.8rem; color: var(--muted); }
+.upload-preview { display: flex; align-items: center; gap: 10px; background: var(--surface2); border-radius: 10px; padding: 10px 14px; }
+.upload-preview img { width: 36px; height: 36px; object-fit: contain; border-radius: 6px; }
+.upload-preview-name { font-size: 0.82rem; flex: 1; }
+.upload-remove { background: none; border: none; color: var(--muted); font-size: 1.1rem; cursor: pointer; }
+
+/* ── CAPTION ── */
+.caption-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.caption-btn { padding: 10px 6px; border: 1.5px solid var(--border); background: none; border-radius: 10px; font-size: 0.7rem; font-weight: 500; color: var(--muted); cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s; }
+.caption-btn.active { border-color: var(--black); background: var(--black); color: white; }
+.caption-btn:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+
+/* ── GENERATE BTN ── */
+.btn-generate { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 12px; font-family: 'Cabinet Grotesk', sans-serif; font-size: 1rem; font-weight: 700; letter-spacing: 0.02em; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 20px; }
+.btn-generate:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(255,77,0,0.35); }
+.btn-generate:active { transform: translateY(0); }
+.btn-generate:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ── PREVIEW ── */
+.preview-card { position: sticky; top: 90px; }
+.preview-area { padding: 40px 28px; display: flex; flex-direction: column; align-items: center; gap: 16px; min-height: 340px; justify-content: center; background: var(--surface2); margin: 0 -1px; }
+.preview-placeholder { text-align: center; color: var(--muted); }
+.placeholder-icon { font-size: 3.5rem; margin-bottom: 12px; opacity: 0.4; }
+.placeholder-text { font-size: 0.85rem; }
+.qr-wrapper { position: relative; display: inline-block; }
+.qr-caption { font-size: 0.78rem; color: var(--muted); text-align: center; max-width: 220px; word-break: break-all; }
+.qr-arrow { font-size: 1.4rem; color: var(--accent); animation: bounce 1.5s ease-in-out infinite; }
+.qr-image-above, .qr-image-below { max-width: 120px; max-height: 60px; object-fit: contain; border-radius: 8px; }
+
+/* ── DOWNLOAD ── */
+.download-btns { padding: 20px 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 1px solid var(--border); }
+.btn-dl { padding: 12px; border-radius: 10px; font-family: 'Cabinet Grotesk', sans-serif; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; }
+.btn-dl-primary { background: var(--black); color: white; border: none; }
+.btn-dl-primary:hover { background: #333; transform: translateY(-1px); }
+.btn-dl-secondary { background: none; color: var(--text); border: 1.5px solid var(--border); }
+.btn-dl-secondary:hover { border-color: var(--black); }
+.btn-dl-full { grid-column: 1/-1; background: var(--surface2); color: var(--text); border: 1.5px solid var(--border); }
+.btn-dl-full:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── SLIDER ── */
+.slider-wrap { display: flex; align-items: center; gap: 12px; }
+.form-slider { flex: 1; -webkit-appearance: none; height: 4px; border-radius: 4px; background: var(--border); outline: none; cursor: pointer; }
+.form-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 2px 8px rgba(255,77,0,.3); }
+.slider-value { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 0.85rem; min-width: 50px; text-align: right; }
+
+/* ── ERROR LEVEL ── */
+.error-tabs { display: flex; gap: 6px; }
+.etab { flex: 1; padding: 8px 4px; border: 1.5px solid var(--border); background: none; border-radius: 8px; font-size: 0.72rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+.etab.active { border-color: var(--accent); background: #FFF5F2; color: var(--accent); }
+
+/* ── COLLAPSE ── */
+.collapsible-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 14px 0; border-top: 1px solid var(--border); margin-top: 8px; user-select: none; }
+.collapsible-title { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 0.9rem; }
+.collapsible-arrow { color: var(--muted); transition: transform 0.3s; font-size: 0.9rem; }
+.collapsible-arrow.open { transform: rotate(180deg); }
+.collapsible-body { overflow: hidden; transition: max-height 0.4s ease; }
+
+/* ── TOAST ── */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--black); color: white; padding: 12px 24px; border-radius: 50px; font-size: 0.85rem; z-index: 9999; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast-icon { color: var(--accent); }
+
+/* ── WIFI ── */
+.wifi-security { display: flex; gap: 6px; }
+.wsec-btn { flex: 1; padding: 9px 4px; border: 1.5px solid var(--border); background: none; border-radius: 8px; font-size: 0.72rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+.wsec-btn.active { border-color: var(--black); background: var(--black); color: white; }
+.vcard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ── HISTORY ── */
+.history-section { padding: 0 28px 28px; }
+.history-title { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 0.85rem; color: var(--muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+.history-list { display: flex; flex-direction: column; gap: 8px; }
+.history-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--surface2); border-radius: 10px; cursor: pointer; transition: background 0.2s; border: 1.5px solid transparent; }
+.history-item:hover { border-color: var(--border); }
+.history-thumb { width: 36px; height: 36px; flex-shrink: 0; }
+.history-thumb canvas, .history-thumb img { width: 100%; height: 100%; }
+.history-info { flex: 1; min-width: 0; }
+.history-type { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); }
+.history-val { font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+
+/* ── MODAL OVERLAY ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); opacity: 0; transition: opacity 0.25s; pointer-events: none; }
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal { background: var(--surface); border-radius: 20px; width: 100%; max-width: 420px; box-shadow: var(--shadow-lg); transform: scale(0.95) translateY(10px); transition: transform 0.3s cubic-bezier(0.34,1.2,0.64,1); overflow: hidden; }
+.modal-overlay.open .modal { transform: scale(1) translateY(0); }
+.modal-header { padding: 28px 28px 0; display: flex; align-items: flex-start; justify-content: space-between; }
+.modal-title { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 1.4rem; color: var(--black); }
+.modal-close { background: none; border: none; font-size: 1.3rem; color: var(--muted); cursor: pointer; padding: 4px; border-radius: 8px; line-height: 1; }
+.modal-close:hover { color: var(--text); background: var(--surface2); }
+.modal-body { padding: 20px 28px 28px; }
+.modal-tabs { display: flex; background: var(--surface2); border-radius: 12px; padding: 4px; margin-bottom: 20px; }
+.modal-tab { flex: 1; padding: 9px; border: none; background: none; border-radius: 9px; font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; color: var(--muted); }
+.modal-tab.active { background: var(--surface); color: var(--black); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+
+/* ── AUTH FORM ── */
+.auth-form .form-group { margin-bottom: 14px; }
+.btn-google { width: 100%; padding: 13px; border: 1.5px solid var(--border); background: var(--surface); border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; color: var(--text); margin-bottom: 16px; }
+.btn-google:hover { border-color: #4285F4; background: #F8F9FF; }
+.google-icon { width: 20px; height: 20px; }
+.auth-divider { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.auth-divider-line { flex: 1; height: 1px; background: var(--border); }
+.auth-divider-text { font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
+.btn-auth-primary { width: 100%; padding: 14px; background: var(--black); color: white; border: none; border-radius: 12px; font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; margin-top: 6px; }
+.btn-auth-primary:hover { background: #333; }
+.auth-switch { font-size: 0.8rem; color: var(--muted); text-align: center; margin-top: 14px; }
+.auth-switch a { color: var(--accent); text-decoration: none; cursor: pointer; font-weight: 600; }
+.auth-switch a:hover { text-decoration: underline; }
+
+/* ── PRICING MODAL ── */
+.pricing-modal .modal { max-width: 760px; }
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.pricing-card { border: 1.5px solid var(--border); border-radius: 16px; padding: 22px 18px; position: relative; transition: all 0.2s; }
+.pricing-card.featured { border-color: var(--accent); border-width: 2px; }
+.pricing-card.pro { border-color: #22C55E; border-width: 2px; }
+.pricing-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 12px; border-radius: 50px; white-space: nowrap; }
+.badge-popular { background: var(--accent); color: white; }
+.badge-pro { background: #22C55E; color: white; }
+.pricing-name { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 1rem; color: var(--black); margin-bottom: 4px; }
+.pricing-price { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 2rem; color: var(--black); line-height: 1; margin: 10px 0 4px; }
+.pricing-price span { font-size: 0.9rem; font-weight: 500; color: var(--muted); }
+.pricing-gen { font-size: 0.8rem; color: var(--muted); margin-bottom: 16px; }
+.pricing-features { list-style: none; margin-bottom: 18px; display: flex; flex-direction: column; gap: 8px; }
+.pricing-features li { font-size: 0.82rem; display: flex; align-items: center; gap: 8px; }
+.feat-check { color: #22C55E; font-size: 0.9rem; }
+.feat-x { color: #ccc; font-size: 0.9rem; }
+.btn-pricing { width: 100%; padding: 12px; border-radius: 10px; font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; border: none; }
+.btn-pricing-free { background: var(--surface2); color: var(--text); border: 1.5px solid var(--border); }
+.btn-pricing-free:hover { border-color: var(--black); }
+.btn-pricing-starter { background: var(--accent); color: white; }
+.btn-pricing-starter:hover { background: #E04400; transform: translateY(-1px); }
+.btn-pricing-pro { background: #22C55E; color: white; }
+.btn-pricing-pro:hover { background: #16A34A; transform: translateY(-1px); }
+
+/* ── PAYPAL ── */
+.paypal-section { margin-top: 16px; padding: 16px; background: var(--surface2); border-radius: 12px; border: 1.5px solid var(--border); }
+.paypal-title { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 0.85rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.paypal-logo-inline { background: #003087; color: #009CDE; padding: 3px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.02em; }
+.paypal-logo-inline span { color: #012169; }
+.btn-paypal { width: 100%; padding: 13px; background: #FFC439; color: #003087; border: none; border-radius: 10px; font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-paypal:hover { background: #F5BA30; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(255,196,57,0.4); }
+.paypal-secure { font-size: 0.7rem; color: var(--muted); text-align: center; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+
+/* ── LIMIT WALL ── */
+.limit-wall { background: linear-gradient(135deg, #FFF5F2 0%, #FFF9F0 100%); border: 2px dashed var(--accent); border-radius: 16px; padding: 28px 24px; text-align: center; margin-top: 20px; }
+.limit-wall-icon { font-size: 2.5rem; margin-bottom: 10px; }
+.limit-wall-title { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--black); margin-bottom: 6px; }
+.limit-wall-sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; }
+.btn-upgrade { padding: 13px 24px; background: var(--accent); color: white; border: none; border-radius: 12px; font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
+.btn-upgrade:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,77,0,0.3); }
+
+/* ── ANIMATIONS ── */
+@keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes fadeIn { from { opacity:0; transform: scale(0.95); } to { opacity:1; transform: scale(1); } }
+.qr-anim { animation: fadeIn 0.35s ease forwards; }
+#barcodeOutput { max-width: 100%; }
+
+.plan-vip { background: linear-gradient(135deg, #1a1a1a, #333); color: #FFB800; }
+
+/* ── ADSENSE ZONES ── */
+.ad-zone { background: var(--surface2); border: 1px dashed var(--border); border-radius: 12px; padding: 16px; text-align: center; font-size: 0.75rem; color: var(--muted); margin: 16px 0; min-height: 90px; display: flex; align-items: center; justify-content: center; }
+.ad-zone.ad-hidden { display: none !important; }
+
+/* ── VIP MODAL ── */
+.vip-hero { background: linear-gradient(135deg, #0F0F0F 0%, #1a1a1a 100%); border-radius: 14px; padding: 28px 24px; text-align: center; margin-bottom: 20px; position: relative; overflow: hidden; }
+.vip-crown { font-size: 2.8rem; margin-bottom: 10px; display: block; }
+.vip-hero-title { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 1.4rem; color: #FFB800; margin-bottom: 6px; }
+.vip-hero-sub { font-size: 0.82rem; color: #888; line-height: 1.5; }
+.vip-features { list-style: none; margin-bottom: 18px; display: flex; flex-direction: column; gap: 10px; }
+.vip-features li { font-size: 0.85rem; display: flex; align-items: center; gap: 10px; }
+.vip-check { color: #FFB800; font-size: 1rem; }
+.vip-form-wrap { background: var(--surface2); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; }
+.vip-form-title { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 0.85rem; margin-bottom: 12px; color: var(--black); }
+.btn-vip-request { width: 100%; padding: 14px; background: #FFB800; color: #0F0F0F; border: none; border-radius: 12px; font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; }
+.btn-vip-request:hover { background: #E6A500; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,184,0,0.3); }
+.btn-vip-request:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
+.vip-pending-box { background: #FFF9E6; border: 1.5px solid #FFB800; border-radius: 12px; padding: 16px 18px; text-align: center; }
+.vip-pending-icon { font-size: 1.8rem; margin-bottom: 8px; }
+.vip-pending-title { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 0.95rem; color: #856000; margin-bottom: 4px; }
+.vip-pending-sub { font-size: 0.8rem; color: #9A7300; }
+.btn-vip-hdr { padding: 9px 18px; background: linear-gradient(135deg, #1a1a1a, #333); color: #FFB800; border: 1.5px solid #333; border-radius: 10px; font-family: 'Cabinet Grotesk', sans-serif; font-weight: 700; font-size: 0.82rem; cursor: pointer; transition: all 0.2s; }
+.btn-vip-hdr:hover { box-shadow: 0 4px 16px rgba(255,184,0,0.3); transform: translateY(-1px); }
+
+/* ── MOBILE ── */
+@media (max-width: 768px) {  header { padding: 16px 20px; }
+  .logo { font-size: 1.2rem; }
+  .header-tag { display: none; }
+  .hero { padding: 40px 20px 24px; }
+  .hero-title { font-size: 2rem; }
+  .app-container { grid-template-columns: 1fr; padding: 0 16px; margin: 20px auto; gap: 16px; }
+  .preview-card { position: static; }
+  .type-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .type-btn { padding: 10px 4px; }
+  .type-icon { font-size: 1.1rem; }
+  .card-body { padding: 16px 20px 20px; }
+  .form-row { grid-template-columns: 1fr; }
+  .download-btns { grid-template-columns: 1fr; }
+  .btn-dl-full { grid-column: auto; }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .btn-login, .btn-signup-hdr { font-size: 0.72rem; padding: 7px 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"><span class="toast-icon">✓</span><span id="toastMsg"></span></div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title" id="authModalTitle">Connexion</div>
+      <button class="modal-close" onclick="closeModal('authModal')">✕</button>
+    </div>
+    <div class="modal-body auth-form">
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="tabLogin" onclick="switchAuthTab('login')">Se connecter</button>
+        <button class="modal-tab" id="tabRegister" onclick="switchAuthTab('register')">S'inscrire</button>
+      </div>
+
+      <!-- GOOGLE -->
+      <button class="btn-google" onclick="authWithGoogle()">
+        <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continuer avec Google
+      </button>
+
+      <div class="auth-divider">
+        <div class="auth-divider-line"></div>
+        <div class="auth-divider-text">ou par email</div>
+        <div class="auth-divider-line"></div>
+      </div>
+
+      <div id="registerExtra" style="display:none">
+        <div class="form-group">
+          <label class="form-label">Prénom</label>
+          <input type="text" class="form-input" id="authFirstName" placeholder="Jean">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="authEmail" placeholder="vous@exemple.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mot de passe</label>
+        <input type="password" class="form-input" id="authPassword" placeholder="••••••••">
+      </div>
+      <button class="btn-auth-primary" onclick="submitAuth()" id="authSubmitBtn">Se connecter</button>
+      <div class="auth-switch" id="authSwitch">
+        Pas encore de compte ? <a onclick="switchAuthTab('register')">S'inscrire gratuitement</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING MODAL — replaced by VIP modal, kept minimal for any legacy references -->
+<div class="modal-overlay pricing-modal" id="pricingModal">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Accès gratuit · 20 générations/mois</div>
+        <div style="font-size:0.85rem;color:var(--muted);margin-top:4px">Pas d'abonnement payant.</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('pricingModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="pricing-grid" style="grid-template-columns:1fr">
+        <!-- FREE -->
+        <div class="pricing-card">
+          <div class="pricing-name">Gratuit</div>
+          <div class="pricing-price">0€ <span>/ mois</span></div>
+          <div class="pricing-gen">20 générations / mois</div>
+          <ul class="pricing-features">
+            <li><span class="feat-check">✓</span> QR Code & Code-barre</li>
+            <li><span class="feat-check">✓</span> Toutes les couleurs</li>
+            <li><span class="feat-check">✓</span> PNG + SVG</li>
+            <li><span class="feat-check">✓</span> Logo au centre</li>
+            <li><span class="feat-check">✓</span> Images décoratives</li>
+          </ul>
+          <button class="btn-pricing btn-pricing-free" onclick="closeModal('pricingModal')">Plan actuel</button>
+        </div>
+      </div>
+      <div style="margin-top:16px;text-align:center;">
+        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px">Tu veux des générations illimitées et sans pub ?</p>
+        <button class="btn-upgrade" onclick="closeModal('pricingModal');openModal('vipModal')">👑 Demander l'accès VIP gratuit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VIP MODAL -->
+<div class="modal-overlay" id="vipModal">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <div class="modal-title" style="color:#FFB800">Accès VIP 👑</div>
+      <button class="modal-close" onclick="closeModal('vipModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="vip-hero">
+        <span class="vip-crown">👑</span>
+        <div class="vip-hero-title">Accès Créateur</div>
+        <div class="vip-hero-sub">Accès complet, illimité et sans publicité,<br>réservé au créateur et à ses invités de confiance.</div>
+      </div>
+      <ul class="vip-features">
+        <li><span class="vip-check">★</span> Générations illimitées</li>
+        <li><span class="vip-check">★</span> Toutes les fonctionnalités débloquées</li>
+        <li><span class="vip-check">★</span> Sans aucune publicité</li>
+        <li><span class="vip-check">★</span> Accès gratuit à vie (sur autorisation)</li>
+      </ul>
+      <div id="vipFormArea">
+        <div class="vip-form-wrap">
+          <div class="vip-form-title">Demander l'accès</div>
+          <div class="form-group">
+            <label class="form-label">Ton prénom</label>
+            <input type="text" class="form-input" id="vipName" placeholder="Jean">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ton email</label>
+            <input type="email" class="form-input" id="vipEmail" placeholder="jean@email.com">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Pourquoi veux-tu l'accès ? (optionnel)</label>
+            <input type="text" class="form-input" id="vipReason" placeholder="Je suis un ami du créateur...">
+          </div>
+        </div>
+        <button class="btn-vip-request" onclick="submitVipRequest()" id="vipSubmitBtn">
+          ✉️ Envoyer la demande au créateur
+        </button>
+        <div style="font-size:0.72rem;color:var(--muted);text-align:center;margin-top:10px">
+          Le créateur recevra ta demande et ton modèle d'appareil par email.<br>Tu seras notifié de sa décision.
+        </div>
+      </div>
+      <div id="vipPendingArea" style="display:none">
+        <div class="vip-pending-box">
+          <div class="vip-pending-icon">✉️</div>
+          <div class="vip-pending-title">Demande envoyée !</div>
+          <div class="vip-pending-sub">Le créateur va examiner ta demande et t'envoyer un <strong>code d'accès</strong> par email s'il accepte.<br>Entre-le ci-dessous pour débloquer ton accès VIP.</div>
+        </div>
+        <div class="form-group" style="margin-top:16px">
+          <label class="form-label">Code d'accès VIP</label>
+          <input type="text" class="form-input" id="vipCodeInput" placeholder="Entre le code reçu par email…" style="text-align:center;font-size:1.2rem;letter-spacing:0.2em;font-weight:700">
+          <div class="form-hint" style="text-align:center">Le créateur t'enverra ce code s'il accepte ta demande</div>
+        </div>
+        <button class="btn-vip-request" style="margin-top:4px" onclick="redeemVipCode()">👑 Activer mon accès VIP</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <a href="#" class="logo">QR<span class="logo-dot">IFY</span></a>
+  <div class="header-tag">Générateur QR & Code-Barre</div>
+  <div class="header-right">
+    <div id="headerGuest">
+      <button class="btn-vip-hdr" onclick="openModal('vipModal')">👑 Accès VIP</button>
+      <button class="btn-login" onclick="openModal('authModal');switchAuthTab('login')">Se connecter</button>
+      <button class="btn-signup-hdr" onclick="openModal('authModal');switchAuthTab('register')">S'inscrire</button>
+    </div>
+    <div id="headerUser" style="display:none" class="user-badge">
+      <div class="user-avatar" id="userAvatar">JD</div>
+      <span class="user-plan-badge plan-free" id="userPlanBadge">Gratuit</span>
+      <button class="btn-logout" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <h1 class="hero-title">Génère ton <span>QR Code</span><br>en 5 secondes.</h1>
+  <p class="hero-sub">Lien, WiFi, vCard, email, SMS... Personnalise tout — couleur, logo, légende. Télécharge en PNG ou SVG.</p>
+  <div class="usage-bar-wrap" id="usageBarWrap">
+    <div class="usage-bar-top">
+      <span class="usage-label" id="usageLabel">Générations ce mois-ci</span>
+      <span class="usage-count" id="usageCount">0 / 20</span>
+    </div>
+    <div class="usage-track"><div class="usage-fill ok" id="usageFill" style="width:0%"></div></div>
+    <div class="usage-upgrade-hint" id="usageHint">
+      Limite mensuelle : 20 générations gratuites. <a onclick="openModal('vipModal')">Demander l'accès VIP 👑</a> pour l'illimité.
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<!-- ADSENSE BANNER (masqué pour Starter, Pro, VIP) -->
+<div class="ad-zone" id="adBannerTop" style="max-width:1100px;margin:0 auto 0;padding:0 24px">
+  <!-- Google AdSense : remplace par ton code pub -->
+  <!-- <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXX" data-ad-slot="YYYYYYY" data-ad-format="auto"></ins> -->
+  📢 Espace publicitaire — Google AdSense (728×90)
+</div>
+<div class="app-container">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Configuration</div>
+      </div>
+      <div class="card-body">
+
+        <!-- OUTPUT TYPE -->
+        <div class="form-group">
+          <label class="form-label">Type de sortie</label>
+          <div class="output-tabs">
+            <button class="otab active" onclick="switchOutput('qr', this)">⬛ QR Code</button>
+            <button class="otab" onclick="switchOutput('barcode', this)">▌▌▌ Code-Barre</button>
+          </div>
+        </div>
+
+        <!-- QR TYPE -->
+        <div id="qrTypeSection">
+          <div class="form-group">
+            <label class="form-label">Type de contenu</label>
+            <div class="type-grid">
+              <button class="type-btn active" onclick="switchType('url', this)"><span class="type-icon">🔗</span><span class="type-label">Lien</span></button>
+              <button class="type-btn" onclick="switchType('wifi', this)"><span class="type-icon">📶</span><span class="type-label">WiFi</span></button>
+              <button class="type-btn" onclick="switchType('vcard', this)"><span class="type-icon">👤</span><span class="type-label">Contact</span></button>
+              <button class="type-btn" onclick="switchType('email', this)"><span class="type-icon">✉️</span><span class="type-label">Email</span></button>
+              <button class="type-btn" onclick="switchType('sms', this)"><span class="type-icon">💬</span><span class="type-label">SMS</span></button>
+              <button class="type-btn" onclick="switchType('phone', this)"><span class="type-icon">📞</span><span class="type-label">Tél</span></button>
+              <button class="type-btn" onclick="switchType('text', this)"><span class="type-icon">📝</span><span class="type-label">Texte</span></button>
+              <button class="type-btn" onclick="switchType('geo', this)"><span class="type-icon">📍</span><span class="type-label">GPS</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div id="dynamicForm"></div>
+
+        <!-- BARCODE TYPE -->
+        <div id="barcodeTypeSection" style="display:none">
+          <div class="form-group">
+            <label class="form-label">Format code-barre</label>
+            <select class="form-select" id="barcodeFormat">
+              <option value="CODE128">CODE128 (universel)</option>
+              <option value="EAN13">EAN-13 (produits)</option>
+              <option value="EAN8">EAN-8</option>
+              <option value="UPC">UPC-A</option>
+              <option value="CODE39">CODE39</option>
+              <option value="ITF14">ITF-14</option>
+              <option value="MSI">MSI</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Valeur</label>
+            <input type="text" class="form-input" id="barcodeValue" placeholder="Ex: 5901234123457">
+            <div class="form-hint">Pour EAN-13 : 13 chiffres. CODE128 : texte libre.</div>
+          </div>
+        </div>
+
+        <!-- ADVANCED -->
+        <div class="collapsible-header" onclick="toggleCollapse('advancedBody', this)">
+          <span class="collapsible-title">🎨 Personnalisation</span>
+          <span class="collapsible-arrow open">▼</span>
+        </div>
+        <div class="collapsible-body" id="advancedBody" style="max-height:1000px">
+          <div class="form-row" style="margin-top:12px">
+            <div class="form-group">
+              <label class="form-label">Couleur QR</label>
+              <div class="color-picker-wrap">
+                <div class="color-preview" id="fgPreview" style="background:#0F0F0F" onclick="document.getElementById('fgPicker').click()"></div>
+                <div class="color-presets">
+                  <div class="color-preset selected" style="background:#0F0F0F" onclick="setColor('fg','#0F0F0F',this)"></div>
+                  <div class="color-preset" style="background:#FF4D00" onclick="setColor('fg','#FF4D00',this)"></div>
+                  <div class="color-preset" style="background:#2563EB" onclick="setColor('fg','#2563EB',this)"></div>
+                  <div class="color-preset" style="background:#16A34A" onclick="setColor('fg','#16A34A',this)"></div>
+                  <div class="color-preset" style="background:#7C3AED" onclick="setColor('fg','#7C3AED',this)"></div>
+                  <div class="color-preset" style="background:#DB2777" onclick="setColor('fg','#DB2777',this)"></div>
+                </div>
+              </div>
+              <input type="color" id="fgPicker" value="#0F0F0F" onchange="setColorFromPicker('fg', this.value)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fond</label>
+              <div class="color-picker-wrap">
+                <div class="color-preview" id="bgPreview" style="background:#FFFFFF" onclick="document.getElementById('bgPicker').click()"></div>
+                <div class="color-presets">
+                  <div class="color-preset selected" style="background:#FFFFFF; border:1.5px solid #eee" onclick="setColor('bg','#FFFFFF',this)"></div>
+                  <div class="color-preset" style="background:#F7F5F0" onclick="setColor('bg','#F7F5F0',this)"></div>
+                  <div class="color-preset" style="background:#0F0F0F" onclick="setColor('bg','#0F0F0F',this)"></div>
+                  <div class="color-preset" style="background:#FFF3E0" onclick="setColor('bg','#FFF3E0',this)"></div>
+                  <div class="color-preset" style="background:#E0F2FE" onclick="setColor('bg','#E0F2FE',this)"></div>
+                  <div class="color-preset" style="background:transparent; border:1.5px dashed #ccc; background-image:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAADFJREFUKFNj/P///38GJGBsbGyMkCUZGBgYkKlHFyCTB5kAAIMSAh5GUhQXlQAAAABJRU5ErkJggg==')" onclick="setColor('bg','transparent',this)"></div>
+                </div>
+              </div>
+              <input type="color" id="bgPicker" value="#FFFFFF" onchange="setColorFromPicker('bg', this.value)">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Taille (px)</label>
+            <div class="slider-wrap">
+              <input type="range" class="form-slider" id="sizeSlider" min="128" max="512" value="256" oninput="document.getElementById('sizeVal').textContent=this.value+'px'">
+              <span class="slider-value" id="sizeVal">256px</span>
+            </div>
+          </div>
+
+          <div class="form-group" id="errorLevelGroup">
+            <label class="form-label">Niveau de correction d'erreur</label>
+            <div class="error-tabs">
+              <button class="etab" onclick="setError('L',this)">L · 7%</button>
+              <button class="etab active" onclick="setError('M',this)">M · 15%</button>
+              <button class="etab" onclick="setError('Q',this)">Q · 25%</button>
+              <button class="etab" onclick="setError('H',this)">H · 30%</button>
+            </div>
+            <div class="form-hint">H recommandé si tu ajoutes un logo.</div>
+          </div>
+
+          <!-- LOGO -->
+          <div class="form-group" id="logoSection">
+            <label class="form-label">Logo au centre</label>
+            <div id="logoUploadZone" class="upload-zone" onclick="handleLogoClick()">
+              <input type="file" id="logoInput" accept="image/*" onchange="handleLogoUpload(this)">
+              <div class="upload-icon">🖼️</div>
+              <div class="upload-text">Clique ou glisse une image<br><small>PNG, JPG, SVG — max 2MB</small></div>
+            </div>
+            <div id="logoPreviewWrap" style="display:none">
+              <div class="upload-preview">
+                <img id="logoPreviewImg" src="" alt="logo">
+                <span class="upload-preview-name" id="logoPreviewName"></span>
+                <button class="upload-remove" onclick="removeLogo()">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- DECOR IMAGE -->
+          <div class="form-group">
+            <label class="form-label">Image décorative</label>
+            <div class="caption-grid" style="margin-bottom:10px">
+              <button class="caption-btn active" onclick="setImagePos('none',this)" id="imgPosNone">Aucune</button>
+              <button class="caption-btn" onclick="setImagePos('above',this)" id="imgPosAbove">Au-dessus</button>
+              <button class="caption-btn" onclick="setImagePos('below',this)" id="imgPosBelow">En-dessous</button>
+            </div>
+            <div id="decorImageUpload" style="display:none">
+              <div class="upload-zone" onclick="document.getElementById('decorInput').click()">
+                <input type="file" id="decorInput" accept="image/*" onchange="handleDecorUpload(this)">
+                <div class="upload-icon">📸</div>
+                <div class="upload-text">Image au-dessus/en-dessous du QR</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LÉGENDE -->
+          <div class="form-group">
+            <label class="form-label">Légende</label>
+            <div class="caption-grid">
+              <button class="caption-btn active" onclick="setCaption('none',this)">Aucune</button>
+              <button class="caption-btn" onclick="setCaption('above',this)">Au-dessus</button>
+              <button class="caption-btn" onclick="setCaption('below',this)">En-dessous</button>
+            </div>
+            <input type="text" class="form-input" id="captionText" placeholder="Ex: Scanne-moi !" style="margin-top:8px">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Flèche indicatrice</label>
+            <div class="caption-grid">
+              <button class="caption-btn active" onclick="setArrow('none',this)">Aucune</button>
+              <button class="caption-btn" onclick="setArrow('above',this)">↓ Au-dessus</button>
+              <button class="caption-btn" onclick="setArrow('below',this)">↑ En-dessous</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIMIT WALL (shown when at limit) -->
+        <div class="limit-wall" id="limitWall" style="display:none">
+          <div class="limit-wall-icon">🔒</div>
+          <div class="limit-wall-title">Limite mensuelle atteinte</div>
+          <div class="limit-wall-sub">Tu as utilisé tes 20 générations gratuites ce mois-ci.<br>Demande l'accès VIP pour des générations illimitées et sans pub.</div>
+          <button class="btn-upgrade" onclick="openModal('vipModal')">Demander l'accès VIP 👑</button>
+        </div>
+
+        <button class="btn-generate" onclick="generate()" id="generateBtn">⚡ Générer</button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT : PREVIEW -->
+  <div class="preview-card">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Aperçu</div>
+        <span style="font-size:0.72rem;color:var(--muted)" id="previewMeta"></span>
+      </div>
+      <div class="preview-area" id="previewArea">
+        <div class="preview-placeholder">
+          <div class="placeholder-icon">⬛</div>
+          <div class="placeholder-text">Ton QR code apparaîtra ici</div>
+        </div>
+      </div>
+      <div class="download-btns" id="downloadBtns" style="display:none">
+        <button class="btn-dl btn-dl-primary" onclick="downloadPNG()">⬇ PNG</button>
+        <button class="btn-dl btn-dl-secondary" onclick="downloadSVG()">⬇ SVG</button>
+        <button class="btn-dl btn-dl-full" onclick="copyToClipboard()">📋 Copier l'image</button>
+      </div>
+      <div class="history-section" id="historySection" style="display:none">
+        <div class="history-title">Récents</div>
+        <div class="history-list" id="historyList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── PLAN CONFIG ──
+const PLANS = {
+  free:    { name:'Gratuit',  limit: 20,        price: 0,    badge:'plan-free',    label:'Gratuit' },
+  vip:     { name:'VIP',      limit: Infinity,  price: 0,    badge:'plan-vip',     label:'VIP 👑' },
+};
+
+// ── STATE ──
+let state = {
+  outputType: 'qr',
+  qrType: 'url',
+  fgColor: '#0F0F0F',
+  bgColor: '#FFFFFF',
+  size: 256,
+  errorLevel: 'M',
+  logo: null,
+  logoName: '',
+  decorImage: null,
+  decorPos: 'none',
+  caption: 'none',
+  captionText: '',
+  arrow: 'none',
+  lastQRData: '',
+};
+
+// ── USER / AUTH STATE (simulated — replace with real backend) ──
+let currentUser = null;
+let authMode = 'login'; // login | register
+let selectedPlan = null;
+let historyArr = [];
+
+// Persist across page reload via sessionStorage (demo only)
+function loadSession() {
+  try {
+    const saved = sessionStorage.getItem('qrify_user');
+    if (saved) {
+      currentUser = JSON.parse(saved);
+      updateHeaderUI();
+      updateUsageBar();
+    }
+  } catch(e) {}
+}
+
+function saveSession() {
+  try { sessionStorage.setItem('qrify_user', JSON.stringify(currentUser)); } catch(e) {}
+}
+
+// ── USAGE HELPERS ──
+function getMonthKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()}`;
+}
+
+function getUserGenerations() {
+  if (!currentUser) {
+    const k = 'qrify_guest_' + getMonthKey();
+    return parseInt(localStorage.getItem(k) || '0');
+  }
+  const mk = getMonthKey();
+  if (!currentUser.usage) currentUser.usage = {};
+  return currentUser.usage[mk] || 0;
+}
+
+function incrementGenerations() {
+  if (!currentUser) {
+    const k = 'qrify_guest_' + getMonthKey();
+    const cur = parseInt(localStorage.getItem(k) || '0');
+    localStorage.setItem(k, cur + 1);
+    return;
+  }
+  const mk = getMonthKey();
+  if (!currentUser.usage) currentUser.usage = {};
+  currentUser.usage[mk] = (currentUser.usage[mk] || 0) + 1;
+  saveSession();
+}
+
+function getPlanLimit() {
+  if (!currentUser) return PLANS.free.limit;
+  const plan = currentUser.plan || 'free';
+  return PLANS[plan]?.limit ?? 20;
+}
+
+function getUserPlan() {
+  if (!currentUser) return 'free';
+  return currentUser.plan || 'free';
+}
+
+function updateUsageBar() {
+  const gen = getUserGenerations();
+  const limit = getPlanLimit();
+  const plan = getUserPlan();
+
+  const countEl = document.getElementById('usageCount');
+  const fillEl = document.getElementById('usageFill');
+  const hintEl = document.getElementById('usageHint');
+  const wrapEl = document.getElementById('usageBarWrap');
+  const limitWall = document.getElementById('limitWall');
+  const genBtn = document.getElementById('generateBtn');
+
+  const pct = limit === Infinity ? 0 : Math.min((gen / limit) * 100, 100);
+  countEl.textContent = limit === Infinity ? `${gen} / ∞` : `${gen} / ${limit}`;
+  fillEl.style.width = limit === Infinity ? '5%' : pct + '%';
+
+  fillEl.className = 'usage-fill';
+  if (pct >= 100) fillEl.classList.add('danger');
+  else if (pct >= 66) fillEl.classList.add('warn');
+  else fillEl.classList.add('ok');
+
+  const atLimit = limit !== Infinity && gen >= limit;
+  limitWall.style.display = atLimit ? '' : 'none';
+  genBtn.style.display = atLimit ? 'none' : 'flex';
+
+  if (plan === 'vip') {
+    hintEl.innerHTML = '👑 Accès VIP — générations illimitées, sans publicité !';
+  } else {
+    hintEl.innerHTML = `Limite mensuelle : 20 générations gratuites. <a onclick="openModal('vipModal')">Demander l'accès VIP 👑</a> pour l'illimité.`;
+  }
+}
+
+// ── HEADER UI ──
+function updateHeaderUI() {
+  const guestEl = document.getElementById('headerGuest');
+  const userEl = document.getElementById('headerUser');
+  const avatarEl = document.getElementById('userAvatar');
+  const planBadgeEl = document.getElementById('userPlanBadge');
+
+  if (currentUser) {
+    guestEl.style.display = 'none';
+    userEl.style.display = 'flex';
+    const initials = ((currentUser.firstName || '')[0] || '') + ((currentUser.lastName || currentUser.email || '')[0] || '');
+    avatarEl.textContent = initials.toUpperCase() || '?';
+    const plan = getUserPlan();
+    planBadgeEl.textContent = PLANS[plan]?.label || 'Gratuit';
+    planBadgeEl.className = 'user-plan-badge ' + (PLANS[plan]?.badge || 'plan-free');
+  } else {
+    guestEl.style.display = 'flex';
+    userEl.style.display = 'none';
+  }
+}
+
+// ── AUTH ──
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  const ps = document.getElementById('paypalSection');
+  if (ps) ps.style.display = 'none';
+}
+
+function switchAuthTab(tab) {
+  authMode = tab;
+  const loginTab = document.getElementById('tabLogin');
+  const regTab = document.getElementById('tabRegister');
+  const titleEl = document.getElementById('authModalTitle');
+  const submitBtn = document.getElementById('authSubmitBtn');
+  const switchEl = document.getElementById('authSwitch');
+  const extraEl = document.getElementById('registerExtra');
+
+  if (tab === 'login') {
+    loginTab.classList.add('active'); regTab.classList.remove('active');
+    titleEl.textContent = 'Connexion';
+    submitBtn.textContent = 'Se connecter';
+    extraEl.style.display = 'none';
+    switchEl.innerHTML = 'Pas encore de compte ? <a onclick="switchAuthTab(\'register\')">S\'inscrire gratuitement</a>';
+  } else {
+    regTab.classList.add('active'); loginTab.classList.remove('active');
+    titleEl.textContent = 'Créer un compte';
+    submitBtn.textContent = 'Créer mon compte';
+    extraEl.style.display = '';
+    switchEl.innerHTML = 'Déjà un compte ? <a onclick="switchAuthTab(\'login\')">Se connecter</a>';
+  }
+}
+
+function submitAuth() {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const firstName = document.getElementById('authFirstName')?.value.trim() || '';
+
+  if (!email || !password) { showToast('⚠️ Remplis tous les champs'); return; }
+  if (!email.includes('@')) { showToast('⚠️ Email invalide'); return; }
+  if (password.length < 6) { showToast('⚠️ Mot de passe trop court (min 6 car.)'); return; }
+
+  // Simulate auth (replace with real API)
+  if (authMode === 'register') {
+    currentUser = { email, firstName: firstName || email.split('@')[0], plan: 'free', usage: {} };
+    showToast('✓ Compte créé ! Bienvenue 👋');
+  } else {
+    // Simulate login: retrieve existing session or create
+    const saved = sessionStorage.getItem('qrify_user');
+    if (saved) {
+      currentUser = JSON.parse(saved);
+    } else {
+      currentUser = { email, firstName: email.split('@')[0], plan: 'free', usage: {} };
+    }
+    showToast('✓ Connexion réussie !');
+  }
+
+  saveSession();
+  closeModal('authModal');
+  updateHeaderUI();
+  updateUsageBar();
+  updateAdsVisibility();
+}
+
+function authWithGoogle() {
+  // Simulate Google OAuth (replace with real OAuth flow)
+  showToast('⚡ Connexion Google simulée…');
+  setTimeout(() => {
+    currentUser = { email: 'utilisateur@gmail.com', firstName: 'Google', plan: 'free', usage: {} };
+    saveSession();
+    closeModal('authModal');
+    updateHeaderUI();
+    updateUsageBar();
+    showToast('✓ Connecté avec Google !');
+  }, 800);
+}
+
+function logout() {
+  currentUser = null;
+  sessionStorage.removeItem('qrify_user');
+  updateHeaderUI();
+  updateUsageBar();
+  updateAdsVisibility();
+  showToast('✓ Déconnecté');
+}
+
+// ── PAYPAL ──
+function initPayPal(plan) {
+  selectedPlan = plan;
+  const section = document.getElementById('paypalSection');
+  const labelEl = document.getElementById('paypalPlanLabel');
+  const amountEl = document.getElementById('paypalAmount');
+  const btnAmountEl = document.getElementById('paypalBtnAmount');
+
+  const planData = PLANS[plan];
+  labelEl.textContent = planData.name;
+  amountEl.textContent = planData.price.toFixed(2) + '€';
+  btnAmountEl.textContent = planData.price.toFixed(2) + '€';
+  section.style.display = '';
+
+  // Load real PayPal SDK here:
+  // const script = document.createElement('script');
+  // script.src = `https://www.paypal.com/sdk/js?client-id=YOUR_CLIENT_ID&currency=EUR&vault=true&intent=subscription`;
+  // script.onload = () => {
+  //   paypal.Buttons({ createSubscription: ... onApprove: ... }).render('#paypal-button-container');
+  // };
+  // document.head.appendChild(script);
+
+  section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function simulatePayPal() {
+  if (!currentUser) {
+    showToast('⚠️ Connecte-toi d\'abord pour souscrire');
+    closeModal('pricingModal');
+    setTimeout(() => openModal('authModal'), 300);
+    return;
+  }
+  const planName = PLANS[selectedPlan]?.name || '';
+  showToast(`⚡ Redirection PayPal simulée (${planName})…`);
+  setTimeout(() => {
+    currentUser.plan = selectedPlan;
+    saveSession();
+    updateHeaderUI();
+    updateUsageBar();
+    updateAdsVisibility();
+    closeModal('pricingModal');
+    showToast(`✓ Plan ${planName} activé ! 🎉`);
+  }, 1200);
+}
+function selectPlan(plan) {
+  if (plan === 'free') {
+    closeModal('pricingModal');
+    showToast('Tu es sur le plan gratuit');
+  }
+}
+
+// ── FORMS ──
+const forms = {
+  url: `<div class="form-group"><label class="form-label">URL / Lien</label><input type="url" class="form-input" id="f_url" placeholder="https://youtube.com/watch?v=..." autofocus><div class="form-hint">Colle n'importe quel lien — YouTube, Instagram, site web...</div></div>`,
+  wifi: `<div class="form-group"><label class="form-label">Nom du réseau (SSID)</label><input type="text" class="form-input" id="f_ssid" placeholder="MonWiFi"></div><div class="form-group"><label class="form-label">Mot de passe</label><input type="text" class="form-input" id="f_wpass" placeholder="MotDePasse123"></div><div class="form-group"><label class="form-label">Sécurité</label><div class="wifi-security"><button class="wsec-btn active" onclick="setWifiSec('WPA',this)">WPA/WPA2</button><button class="wsec-btn" onclick="setWifiSec('WEP',this)">WEP</button><button class="wsec-btn" onclick="setWifiSec('nopass',this)">Ouvert</button></div></div>`,
+  vcard: `<div class="vcard-grid"><div class="form-group"><label class="form-label">Prénom</label><input type="text" class="form-input" id="f_fname" placeholder="Jean"></div><div class="form-group"><label class="form-label">Nom</label><input type="text" class="form-input" id="f_lname" placeholder="Dupont"></div><div class="form-group"><label class="form-label">Téléphone</label><input type="tel" class="form-input" id="f_vtel" placeholder="+33 6 12 34 56 78"></div><div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="f_vemail" placeholder="jean@email.com"></div><div class="form-group"><label class="form-label">Entreprise</label><input type="text" class="form-input" id="f_vorg" placeholder="Ma Société"></div><div class="form-group"><label class="form-label">Site web</label><input type="url" class="form-input" id="f_vweb" placeholder="https://..."></div></div>`,
+  email: `<div class="form-group"><label class="form-label">Adresse email</label><input type="email" class="form-input" id="f_email" placeholder="contact@exemple.com"></div><div class="form-group"><label class="form-label">Objet (optionnel)</label><input type="text" class="form-input" id="f_esubject" placeholder="Bonjour !"></div><div class="form-group"><label class="form-label">Message (optionnel)</label><textarea class="form-textarea" id="f_ebody" placeholder="Votre message..."></textarea></div>`,
+  sms: `<div class="form-group"><label class="form-label">Numéro</label><input type="tel" class="form-input" id="f_smsnum" placeholder="+33 6 12 34 56 78"></div><div class="form-group"><label class="form-label">Message (optionnel)</label><textarea class="form-textarea" id="f_smsbody" placeholder="Ton message..."></textarea></div>`,
+  phone: `<div class="form-group"><label class="form-label">Numéro de téléphone</label><input type="tel" class="form-input" id="f_phone" placeholder="+33 6 12 34 56 78"></div>`,
+  text: `<div class="form-group"><label class="form-label">Texte libre</label><textarea class="form-textarea" id="f_text" placeholder="Écris n'importe quel texte..." style="min-height:120px"></textarea></div>`,
+  geo: `<div class="form-row"><div class="form-group"><label class="form-label">Latitude</label><input type="number" class="form-input" id="f_lat" placeholder="48.8566" step="any"></div><div class="form-group"><label class="form-label">Longitude</label><input type="number" class="form-input" id="f_lng" placeholder="2.3522" step="any"></div></div><div class="form-group"><label class="form-label">Nom du lieu (optionnel)</label><input type="text" class="form-input" id="f_geoname" placeholder="Tour Eiffel"></div>`,
+};
+
+let wifiSec = 'WPA';
+function setWifiSec(v, btn) {
+  wifiSec = v;
+  document.querySelectorAll('.wsec-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function buildQRData() {
+  const t = state.qrType;
+  if (t === 'url') return v('f_url') || '';
+  if (t === 'wifi') return `WIFI:T:${wifiSec};S:${v('f_ssid')};P:${v('f_wpass')};;`;
+  if (t === 'vcard') return `BEGIN:VCARD\nVERSION:3.0\nN:${v('f_lname')};${v('f_fname')}\nFN:${v('f_fname')} ${v('f_lname')}\nORG:${v('f_vorg')}\nTEL:${v('f_vtel')}\nEMAIL:${v('f_vemail')}\nURL:${v('f_vweb')}\nEND:VCARD`;
+  if (t === 'email') return `mailto:${v('f_email')}?subject=${encodeURIComponent(v('f_esubject'))}&body=${encodeURIComponent(v('f_ebody'))}`;
+  if (t === 'sms') return `sms:${v('f_smsnum')}${v('f_smsbody') ? '?body='+encodeURIComponent(v('f_smsbody')) : ''}`;
+  if (t === 'phone') return `tel:${v('f_phone')}`;
+  if (t === 'text') return v('f_text') || '';
+  if (t === 'geo') return `geo:${v('f_lat')},${v('f_lng')}${v('f_geoname') ? '?q='+encodeURIComponent(v('f_geoname')) : ''}`;
+  return '';
+}
+
+function v(id) { return (document.getElementById(id)?.value || '').trim(); }
+
+// ── GENERATE ──
+function generate() {
+  // Check limit
+  const gen = getUserGenerations();
+  const limit = getPlanLimit();
+  if (limit !== Infinity && gen >= limit) {
+    showToast('🔒 Limite atteinte — demande l\'accès VIP pour continuer');
+    openModal('vipModal');
+    return;
+  }
+
+  const area = document.getElementById('previewArea');
+  if (state.outputType === 'barcode') { generateBarcode(area); return; }
+
+  const data = buildQRData();
+  if (!data) { showToast('⚠️ Remplis le champ requis'); return; }
+
+  state.lastQRData = data;
+  state.size = parseInt(document.getElementById('sizeSlider').value);
+  state.captionText = document.getElementById('captionText').value.trim();
+
+  area.innerHTML = '';
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:10px;';
+
+  if (state.arrow === 'above') { const a = document.createElement('div'); a.className = 'qr-arrow'; a.textContent = '↓'; wrapper.appendChild(a); }
+  if (state.caption === 'above' && state.captionText) { const c = document.createElement('div'); c.className = 'qr-caption'; c.style.fontWeight = '600'; c.textContent = state.captionText; wrapper.appendChild(c); }
+  if (state.decorPos === 'above' && state.decorImage) { const img = document.createElement('img'); img.src = state.decorImage; img.className = 'qr-image-above'; wrapper.appendChild(img); }
+
+  const qrContainer = document.createElement('div');
+  qrContainer.className = 'qr-wrapper qr-anim';
+  qrContainer.id = 'qrDiv';
+  wrapper.appendChild(qrContainer);
+
+  if (state.decorPos === 'below' && state.decorImage) { const img = document.createElement('img'); img.src = state.decorImage; img.className = 'qr-image-below'; wrapper.appendChild(img); }
+  if (state.caption === 'below' && state.captionText) { const c = document.createElement('div'); c.className = 'qr-caption'; c.style.fontWeight = '600'; c.textContent = state.captionText; wrapper.appendChild(c); }
+  if (state.arrow === 'below') { const a = document.createElement('div'); a.className = 'qr-arrow'; a.textContent = '↑'; wrapper.appendChild(a); }
+
+  area.appendChild(wrapper);
+
+  new QRCode(document.getElementById('qrDiv'), {
+    text: data,
+    width: state.size,
+    height: state.size,
+    colorDark: state.fgColor === 'transparent' ? '#000000' : state.fgColor,
+    colorLight: state.bgColor === 'transparent' ? '#FFFFFF' : state.bgColor,
+    correctLevel: QRCode.CorrectLevel[state.errorLevel],
+  });
+
+  if (state.logo) setTimeout(() => addLogoOverlay(), 200);
+
+  document.getElementById('downloadBtns').style.display = 'grid';
+  document.getElementById('previewMeta').textContent = `${state.size}×${state.size}px`;
+
+  // Increment usage
+  incrementGenerations();
+  updateUsageBar();
+
+  addToHistory(data);
+  showToast('✓ QR Code généré !');
+}
+
+function generateBarcode(area) {
+  const gen = getUserGenerations();
+  const limit = getPlanLimit();
+  if (limit !== Infinity && gen >= limit) {
+    showToast('🔒 Limite atteinte — demande l\'accès VIP pour continuer');
+    openModal('vipModal');
+    return;
+  }
+
+  const val = document.getElementById('barcodeValue')?.value?.trim();
+  const fmt = document.getElementById('barcodeFormat')?.value;
+  if (!val) { showToast('⚠️ Entre une valeur pour le code-barre'); return; }
+
+  area.innerHTML = '';
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.id = 'barcodeOutput'; area.appendChild(svg);
+
+  try {
+    JsBarcode('#barcodeOutput', val, {
+      format: fmt,
+      lineColor: state.fgColor === 'transparent' ? '#000' : state.fgColor,
+      background: state.bgColor === 'transparent' ? '#fff' : state.bgColor,
+      width: 2, height: 80, displayValue: true, fontSize: 14,
+    });
+    document.getElementById('downloadBtns').style.display = 'grid';
+    incrementGenerations();
+    updateUsageBar();
+    showToast('✓ Code-barre généré !');
+  } catch(e) {
+    area.innerHTML = '<div class="preview-placeholder"><div class="placeholder-icon">⚠️</div><div class="placeholder-text">Format ou valeur invalide<br><small>Vérifie le nombre de chiffres</small></div></div>';
+  }
+}
+
+function addLogoOverlay() {
+  const canvas = document.querySelector('#qrDiv canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const img = new Image();
+  img.onload = () => {
+    const s = canvas.width;
+    const logoSize = s * 0.22;
+    const x = (s - logoSize) / 2;
+    const y = (s - logoSize) / 2;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(x - 4, y - 4, logoSize + 8, logoSize + 8);
+    ctx.drawImage(img, x, y, logoSize, logoSize);
+  };
+  img.src = state.logo;
+}
+
+// ── LOGO click guard ──
+function handleLogoClick() {
+  document.getElementById('logoInput').click();
+}
+
+// ── DOWNLOAD ──
+function downloadPNG() {
+  const canvas = document.querySelector('#qrDiv canvas') || document.querySelector('#barcodeOutput');
+  if (!canvas) { showToast('Génère d\'abord un QR code'); return; }
+  if (canvas.tagName === 'CANVAS') {
+    const a = document.createElement('a');
+    a.download = 'qrify-qrcode.png'; a.href = canvas.toDataURL('image/png'); a.click();
+  } else {
+    const data = new XMLSerializer().serializeToString(canvas);
+    const blob = new Blob([data], {type:'image/svg+xml'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.download = 'qrify-barcode.svg'; a.href = url; a.click();
+    URL.revokeObjectURL(url);
+  }
+  showToast('✓ Téléchargé !');
+}
+
+function downloadSVG() {
+  const canvas = document.querySelector('#qrDiv canvas');
+  if (!canvas) { showToast('Génère d\'abord un QR code'); return; }
+  const dataUrl = canvas.toDataURL('image/png');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${state.size}" height="${state.size}"><image href="${dataUrl}" width="${state.size}" height="${state.size}"/></svg>`;
+  const blob = new Blob([svg], {type:'image/svg+xml'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.download = 'qrify-qrcode.svg'; a.href = url; a.click();
+  URL.revokeObjectURL(url);
+  showToast('✓ SVG téléchargé !');
+}
+
+function copyToClipboard() {
+  const canvas = document.querySelector('#qrDiv canvas');
+  if (!canvas) return;
+  canvas.toBlob(blob => {
+    navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+    showToast('✓ Image copiée !');
+  });
+}
+
+// ── CONTROLS ──
+function switchOutput(type, btn) {
+  state.outputType = type;
+  document.querySelectorAll('.otab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('qrTypeSection').style.display = type === 'qr' ? '' : 'none';
+  document.getElementById('barcodeTypeSection').style.display = type === 'barcode' ? '' : 'none';
+  document.getElementById('errorLevelGroup').style.display = type === 'qr' ? '' : 'none';
+  if (type === 'qr') switchType(state.qrType, document.querySelector('.type-btn.active'));
+  else document.getElementById('dynamicForm').innerHTML = '';
+}
+
+function switchType(type, btn) {
+  state.qrType = type;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('dynamicForm').innerHTML = forms[type] || '';
+}
+
+function setColor(which, val, el) {
+  if (which === 'fg') { state.fgColor = val; document.getElementById('fgPreview').style.background = val; document.getElementById('fgPicker').value = val === 'transparent' ? '#000000' : val; }
+  else { state.bgColor = val; document.getElementById('bgPreview').style.background = val; document.getElementById('bgPicker').value = val === 'transparent' ? '#ffffff' : val; }
+  document.querySelectorAll('.color-preset').forEach(p => p.classList.remove('selected'));
+  if (el) el.classList.add('selected');
+}
+
+function setColorFromPicker(which, val) {
+  if (which === 'fg') { state.fgColor = val; document.getElementById('fgPreview').style.background = val; }
+  else { state.bgColor = val; document.getElementById('bgPreview').style.background = val; }
+}
+
+function setError(level, btn) {
+  state.errorLevel = level;
+  document.querySelectorAll('.etab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setCaption(pos, btn) {
+  state.caption = pos;
+  const grids = document.querySelectorAll('.caption-grid');
+  grids[0].querySelectorAll('.caption-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setArrow(pos, btn) {
+  state.arrow = pos;
+  const grids = document.querySelectorAll('.caption-grid');
+  grids[grids.length-1].querySelectorAll('.caption-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setImagePos(pos, btn) {
+  state.decorPos = pos;
+  document.querySelectorAll('#imgPosNone,#imgPosAbove,#imgPosBelow').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('decorImageUpload').style.display = pos !== 'none' ? '' : 'none';
+}
+
+function handleLogoUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { showToast('⚠️ Image trop lourde (max 2MB)'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    state.logo = e.target.result; state.logoName = file.name;
+    document.getElementById('logoUploadZone').style.display = 'none';
+    document.getElementById('logoPreviewWrap').style.display = '';
+    document.getElementById('logoPreviewImg').src = e.target.result;
+    document.getElementById('logoPreviewName').textContent = file.name;
+    setError('H', document.querySelectorAll('.etab')[3]);
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeLogo() {
+  state.logo = null;
+  document.getElementById('logoUploadZone').style.display = '';
+  document.getElementById('logoPreviewWrap').style.display = 'none';
+  document.getElementById('logoInput').value = '';
+}
+
+function handleDecorUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { state.decorImage = e.target.result; };
+  reader.readAsDataURL(file);
+}
+
+function toggleCollapse(id, header) {
+  const body = document.getElementById(id);
+  const arrow = header.querySelector('.collapsible-arrow');
+  if (body.style.maxHeight === '0px' || body.style.maxHeight === '') { body.style.maxHeight = '1000px'; arrow.classList.add('open'); }
+  else { body.style.maxHeight = '0px'; arrow.classList.remove('open'); }
+}
+
+// ── HISTORY ──
+function addToHistory(data) {
+  historyArr.unshift({ data, type: state.qrType, time: Date.now() });
+  if (historyArr.length > 5) historyArr.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  const section = document.getElementById('historySection');
+  const list = document.getElementById('historyList');
+  if (historyArr.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = '';
+  list.innerHTML = historyArr.map((h, i) => `
+    <div class="history-item" onclick="reloadHistory(${i})">
+      <div class="history-thumb" id="hthumb_${i}"></div>
+      <div class="history-info">
+        <div class="history-type">${h.type}</div>
+        <div class="history-val">${h.data}</div>
+      </div>
+    </div>
+  `).join('');
+  historyArr.forEach((h, i) => {
+    const el = document.getElementById('hthumb_'+i);
+    if (el) new QRCode(el, { text: h.data, width: 36, height: 36, colorDark: state.fgColor, colorLight: state.bgColor, correctLevel: QRCode.CorrectLevel.L });
+  });
+}
+
+function reloadHistory(i) {
+  const h = historyArr[i];
+  if (!h) return;
+  state.qrType = h.type;
+  document.querySelectorAll('.type-btn').forEach(b => {
+    if (b.querySelector('.type-label')?.textContent?.toLowerCase().includes(h.type.substring(0,3))) b.click();
+  });
+  setTimeout(() => {
+    const el = document.getElementById('f_url') || document.getElementById('f_text');
+    if (el) el.value = h.data;
+    generate();
+  }, 100);
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── CLOSE MODAL ON BACKDROP ──
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// ── KEYBOARD ──
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') generate();
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+});
+
+// ── ADS VISIBILITY ──
+function updateAdsVisibility() {
+  const plan = getUserPlan();
+  const noAds = plan === 'vip';
+  document.querySelectorAll('.ad-zone').forEach(el => {
+    el.classList.toggle('ad-hidden', noAds);
+  });
+}
+
+// ── VIP SYSTEM ──
+// ⚙️  CONFIGURATION CRÉATEUR — mets ton email ici
+const CREATOR_EMAIL = 'evangirier@gmail.com';
+
+// Génère un token unique par appareil (fingerprint léger)
+function getDeviceFingerprint() {
+  const ua = navigator.userAgent;
+  const screen = `${window.screen.width}x${window.screen.height}`;
+  const lang = navigator.language;
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return btoa(`${ua}|${screen}|${lang}|${tz}`).substring(0, 24);
+}
+
+function getDeviceInfo() {
+  const ua = navigator.userAgent;
+  let device = 'Inconnu';
+  let os = 'Inconnu';
+  // OS
+  if (/Windows NT 10/.test(ua)) os = 'Windows 11/10';
+  else if (/Windows NT 6/.test(ua)) os = 'Windows (ancien)';
+  else if (/Mac OS X/.test(ua)) os = 'macOS ' + (ua.match(/Mac OS X ([\d_]+)/)?.[1]?.replace(/_/g,'.') || '');
+  else if (/Android/.test(ua)) os = 'Android ' + (ua.match(/Android ([\d.]+)/)?.[1] || '');
+  else if (/iPhone/.test(ua)) os = 'iOS (iPhone)';
+  else if (/iPad/.test(ua)) os = 'iOS (iPad)';
+  else if (/Linux/.test(ua)) os = 'Linux';
+  // Browser
+  let browser = 'Inconnu';
+  if (/Chrome\//.test(ua) && !/Chromium|Edge/.test(ua)) browser = 'Chrome ' + (ua.match(/Chrome\/([\d.]+)/)?.[1] || '');
+  else if (/Firefox\//.test(ua)) browser = 'Firefox ' + (ua.match(/Firefox\/([\d.]+)/)?.[1] || '');
+  else if (/Safari\//.test(ua) && !/Chrome/.test(ua)) browser = 'Safari';
+  else if (/Edg\//.test(ua)) browser = 'Microsoft Edge';
+  else if (/OPR\//.test(ua)) browser = 'Opera';
+  // Device type
+  if (/Mobile|Android|iPhone|iPad/.test(ua)) device = 'Mobile / Tablette';
+  else device = 'Ordinateur';
+  return { os, browser, device, resolution: `${window.screen.width}×${window.screen.height}`, language: navigator.language, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone };
+}
+
+function submitVipRequest() {
+  const name = document.getElementById('vipName').value.trim();
+  const email = document.getElementById('vipEmail').value.trim();
+  const reason = document.getElementById('vipReason').value.trim();
+
+  if (!name) { showToast('⚠️ Entre ton prénom'); return; }
+  if (!email || !email.includes('@')) { showToast('⚠️ Email invalide'); return; }
+
+  const token = getDeviceFingerprint();
+  const deviceInfo = getDeviceInfo();
+  const requestId = 'VIP-' + Date.now().toString(36).toUpperCase();
+
+  // Sauvegarde la demande en attente localement
+  const pending = {
+    requestId, name, email, reason, token,
+    status: 'pending',
+    submittedAt: new Date().toISOString(),
+    device: deviceInfo,
+  };
+  localStorage.setItem('qrify_vip_request', JSON.stringify(pending));
+
+  // Prépare l'email au créateur via mailto (solution sans serveur)
+  // En production : remplace par fetch('/api/vip-request', { method:'POST', body: JSON.stringify(pending) })
+  const subject = encodeURIComponent(`[QRIFY] Demande d'accès VIP — ${name} (${requestId})`);
+  const body = encodeURIComponent(
+`Nouvelle demande d'accès VIP sur QRIFY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ID Demande  : ${requestId}
+Prénom      : ${name}
+Email       : ${email}
+Raison      : ${reason || '(non renseignée)'}
+
+📱 MODÈLE D'APPAREIL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Type        : ${deviceInfo.device}
+Système     : ${deviceInfo.os}
+Navigateur  : ${deviceInfo.browser}
+Résolution  : ${deviceInfo.resolution}
+Langue      : ${deviceInfo.language}
+Fuseau      : ${deviceInfo.timezone}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Si tu acceptes, réponds à cet email avec le code d'accès VIP.
+Envoyé automatiquement par QRIFY`
+  );
+
+  // Ouvre le client mail du créateur
+  window.location.href = `mailto:${CREATOR_EMAIL}?subject=${subject}&body=${body}`;
+
+  // Affiche l'état "en attente"
+  setTimeout(() => {
+    document.getElementById('vipFormArea').style.display = 'none';
+    document.getElementById('vipPendingArea').style.display = '';
+    showToast('✉️ Demande envoyée au créateur !');
+  }, 600);
+}
+
+function checkVipStatus() {
+  const saved = localStorage.getItem('qrify_vip_request');
+  if (!saved) { showToast('Aucune demande trouvée'); return; }
+  const req = JSON.parse(saved);
+  if (req.status === 'approved') {
+    activateVipAccess(req);
+  } else if (req.status === 'denied') {
+    showToast('❌ Accès refusé par le créateur');
+  } else {
+    showToast('⏳ Toujours en attente de réponse…');
+  }
+}
+
+function redeemVipCode() {
+  const code = (document.getElementById('vipCodeInput').value || '').trim();
+  if (!code) { showToast('⚠️ Entre le code reçu par email'); return; }
+  const VIP_CODE = '0701';
+  if (code === VIP_CODE) {
+    const saved = localStorage.getItem('qrify_vip_request');
+    const req = saved ? JSON.parse(saved) : { name: 'Invité', email: '' };
+    req.status = 'approved';
+    localStorage.setItem('qrify_vip_request', JSON.stringify(req));
+    activateVipAccess(req);
+  } else {
+    showToast('❌ Code incorrect, vérifie l\'email reçu');
+    document.getElementById('vipCodeInput').style.borderColor = 'var(--accent)';
+    setTimeout(() => { document.getElementById('vipCodeInput').style.borderColor = ''; }, 1500);
+  }
+}
+
+function activateVipAccess(req) {
+  if (!currentUser) {
+    currentUser = { email: req.email, firstName: req.name, plan: 'vip', usage: {} };
+  } else {
+    currentUser.plan = 'vip';
+  }
+  saveSession();
+  updateHeaderUI();
+  updateUsageBar();
+  updateAdsVisibility();
+  closeModal('vipModal');
+  showToast('👑 Accès VIP activé ! Bienvenue.');
+}
+
+// Vérifie si l'URL contient un token d'approbation/refus (quand le créateur clique sur le lien email)
+function checkVipUrlToken() {
+  const params = new URLSearchParams(window.location.search);
+  const approveToken = params.get('vip_approve');
+  const denyToken = params.get('vip_deny');
+  const rid = params.get('rid');
+
+  if (approveToken || denyToken) {
+    const saved = localStorage.getItem('qrify_vip_request');
+    const req = saved ? JSON.parse(saved) : null;
+    // Nettoie l'URL
+    window.history.replaceState({}, '', window.location.pathname);
+
+    if (approveToken) {
+      // Le créateur a approuvé — active l'accès VIP
+      if (req) {
+        req.status = 'approved';
+        localStorage.setItem('qrify_vip_request', JSON.stringify(req));
+        activateVipAccess(req);
+        showToast('👑 Accès VIP accordé par le créateur !');
+      } else {
+        // Lien cliqué sur un autre appareil — affiche juste un message
+        showToast('✅ Accès approuvé ! Connecte-toi avec ton email pour en profiter.');
+      }
+    } else if (denyToken) {
+      if (req) {
+        req.status = 'denied';
+        localStorage.setItem('qrify_vip_request', JSON.stringify(req));
+      }
+      showToast('❌ Accès VIP refusé par le créateur.');
+    }
+  }
+}
+
+// ── INIT UPDATES ──
+switchType('url', document.querySelector('.type-btn.active'));
+loadSession();
+updateUsageBar();
+updateAdsVisibility();
+checkVipUrlToken();
+</script>
+</body>
+</html>
